@@ -1256,7 +1256,16 @@ def sat(vin, vmax=2.0):
     else:
         return vin
 
-
+class ButterworthFilter(Compensator):
+    def __init__(self,fc,mag=1.0):
+        """Create a compensator that is a second order Butterworth
+        filter.  fc is the corner frequency in Hz and mag is the low
+        frequency magnitude so that the transfer function will be
+        mag*wn**2/(s**2+2*z*wn*s+wn**2) where z=1/sqrt(2) and
+        wn=2.0*pi*fc."""
+        z=1.0/sqrt(2.0)
+        wn=2.0*pi*fc
+        Compensator.__init__(self,mag*wn**2,[1.0,2.0*z*wn,wn**2])
 
 class Closed_Loop_System_with_Sat(object):
    def __init__(self, plant_tf, Kp, sat):
