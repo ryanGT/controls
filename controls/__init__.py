@@ -8,6 +8,7 @@ import glob, pdb
 from math import atan2, log10
 
 from scipy import *
+from scipy import signal
 from scipy.linalg import inv as inverse
 from scipy.optimize import newton, fmin, fminbound
 from scipy.io import read_array, save, loadmat, write_array
@@ -123,7 +124,10 @@ def fit_discrete_response(output_vect, input_vect, numorder, denorder):
 
 def prependzeros(num, den):
     nd = len(den)
-    nn = len(num)
+    if isscalar(num):
+       nn = 1
+    else:
+       nn = len(num)
     if nn < nd:
         zvect = zeros(nd-nn)
         numout = r_[zvect, num]
@@ -398,6 +402,9 @@ class TransferFunction(signal.lti):
         #print('in TransferFunction.__init__, dt=%s' % dt)
         if _realizable(num, den):
             signal.lti.__init__(self, num, den)
+        else:
+           z, p, k = signal.tf2zpk(num, den)
+           self.gain = k
         self.num = poly1d(num)
         self.den = poly1d(den) 
         self.dt = dt
@@ -587,7 +594,7 @@ class TransferFunction(signal.lti):
     def rlocfind(self, poleloc):
         self.poleloc = poleloc
         kinit,pinit = _k_poles(self,poleloc)
-        k = optimize.fmin(self.opt,[kinit])[0]
+        k = fmin(self.opt,[kinit])[0]
         poles = self._RLFindRoots([k])
         poles = self._RLSortRoots(poles)
         return k, poles
@@ -765,7 +772,8 @@ class TransferFunction(signal.lti):
            s=2.0j*pi*f
         self.comp = self.num(s)/self.den(s)
         self.dBmag = 20*log10(abs(self.comp))
-        self.phase = angle(self.comp,1)
+        rphase = unwrap(angle(self.comp))
+        self.phase = rphase*180.0/pi
         
         if fig is None:
             if fignum is not None:
