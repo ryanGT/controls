@@ -391,11 +391,11 @@ class TransferFunction(signal.lti):
     def __setattr__(self, attr, val):
         realizable = False
         if hasattr(self, 'den') and hasattr(self, 'num'):
-           realizable = _realizable(self.num, self.den)
+            realizable = _realizable(self.num, self.den)
         if realizable:
-           signal.lti.__setattr__(self, attr, val)
+            signal.lti.__setattr__(self, attr, val)
         else:
-           self.__dict__[attr] = val
+            self.__dict__[attr] = val
 
           
     def __init__(self, num, den, dt=0.01, maxt=5.0, myvar='s'):
@@ -403,7 +403,13 @@ class TransferFunction(signal.lti):
         passed to scipy.poly1d to create a list of coefficients."""
         #print('in TransferFunction.__init__, dt=%s' % dt)
         if _realizable(num, den):
-            signal.lti.__init__(self, num, den)
+            num = atleast_1d(num)
+            den = atleast_1d(den)
+            start_num_ind = nonzero(num)[0][0]
+            start_den_ind = nonzero(den)[0][0]
+            num_ = num[start_num_ind:]
+            den_ = den[start_den_ind:]
+            signal.lti.__init__(self, num_, den_)
         else:
            z, p, k = signal.tf2zpk(num, den)
            self.gain = k
