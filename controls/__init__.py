@@ -22,7 +22,7 @@ import sys, os, copy, time
 
 from matplotlib.ticker import LogFormatterMathtext
 
-version = '1.1.1'
+version = '1.1.2'
 
 class MyFormatter(LogFormatterMathtext):
    def __call__(self, x, pos=None):
@@ -867,6 +867,11 @@ class TransferFunction(signal.lti):
         if fig is not None:
             if clear:
                 fig.clf()
+                ax1 = fig.add_subplot(2,1,1)
+                ax2 = fig.add_subplot(2,1,2, sharex=ax1)
+            else:
+                ax1 = fig.axes[0]
+                ax2 = fig.axes[1]
 
         if fig is not None:
             myargs=['linetype','colors','linewidth']
@@ -874,11 +879,6 @@ class TransferFunction(signal.lti):
             for key in myargs:
                 if kwargs.has_key(key):
                     subkwargs[key]=kwargs[key]
-            if clear:
-                fig.clf()
-            ax1 = fig.add_subplot(2,1,1)
-            #if clear:
-            #    ax1.cla()
             myind=ax1._get_lines.count
             mylines=_PlotMag(f, self, axis=ax1, **subkwargs)
             ax1.set_ylabel('Mag. Ratio (dB)')
@@ -887,9 +887,6 @@ class TransferFunction(signal.lti):
                ax1.grid(1)
             if legend is not None and legsub==1:
                ax1.legend(legend, legloc)
-            ax2 = fig.add_subplot(2,1,2, sharex=ax1)
-            #if clear:
-            #    ax2.cla()
             mylines=_PlotPhase(f, self, axis=ax2, **subkwargs)
             ax2.set_ylabel('Phase (deg.)')
             ax2.set_xlabel('Freq. (Hz)')
