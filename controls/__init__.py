@@ -22,7 +22,7 @@ import sys, os, copy, time
 
 from matplotlib.ticker import LogFormatterMathtext
 
-version = '1.1.2'
+version = '1.1.3'
 
 class MyFormatter(LogFormatterMathtext):
    def __call__(self, x, pos=None):
@@ -398,7 +398,7 @@ class TransferFunction(signal.lti):
             self.__dict__[attr] = val
 
           
-    def __init__(self, num, den, dt=0.01, maxt=5.0, myvar='s'):
+    def __init__(self, num, den, dt=0.01, maxt=5.0, myvar='s', label='G'):
         """num and den are either scalar constants or lists that are
         passed to scipy.poly1d to create a list of coefficients."""
         #print('in TransferFunction.__init__, dt=%s' % dt)
@@ -418,7 +418,14 @@ class TransferFunction(signal.lti):
         self.dt = dt
         self.myvar = myvar
         self.maxt = maxt
+        self.label = label
 
+
+    def print_poles(self, label=None):
+       if label is None:
+          label = self.label
+       print(label +' poles =' + str(self.poles))
+       
 
     def __repr__(self, labelstr='controls.TransferFunction'):
         nstr=str(self.num)#.strip()
@@ -836,7 +843,8 @@ class TransferFunction(signal.lti):
     
 
     def FreqResp(self, f, fignum=1, fig=None, clear=True, \
-                 grid=True, legend=None, legloc=1, legsub=1, **kwargs):
+                 grid=True, legend=None, legloc=1, legsub=1, \
+                 use_rad=False, **kwargs):
         """Compute the frequency response of the transfer function
         using the frequency vector f, returning a complex vector.
 
@@ -853,7 +861,10 @@ class TransferFunction(signal.lti):
         if testvect.all():
            s=f#then you really sent me s and not f
         else:
-           s=2.0j*pi*f
+           if use_rad:
+              s = 1.0j*f
+           else:
+              s=2.0j*pi*f
         self.comp = self.num(s)/self.den(s)
         self.dBmag = 20*log10(abs(self.comp))
         rphase = unwrap(angle(self.comp))
@@ -874,7 +885,7 @@ class TransferFunction(signal.lti):
                 ax2 = fig.axes[1]
 
         if fig is not None:
-            myargs=['linetype','colors','linewidth']
+            myargs=['linetype','linewidth']
             subkwargs={}
             for key in myargs:
                 if kwargs.has_key(key):
@@ -889,7 +900,10 @@ class TransferFunction(signal.lti):
                ax1.legend(legend, legloc)
             mylines=_PlotPhase(f, self, axis=ax2, **subkwargs)
             ax2.set_ylabel('Phase (deg.)')
-            ax2.set_xlabel('Freq. (Hz)')
+            if use_rad:
+               ax2.set_xlabel('$\\omega$ (rad./sec.)')
+            else:
+               ax2.set_xlabel('Freq. (Hz)')
             ax2.xaxis.set_major_formatter(MyFormatter())
             if grid:
                ax2.grid(1)
