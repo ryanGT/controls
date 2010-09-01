@@ -12,7 +12,7 @@ from scipy import signal
 from scipy import interpolate, integrate
 from scipy.linalg import inv as inverse
 from scipy.optimize import newton, fmin, fminbound
-from scipy.io import read_array, save, loadmat, write_array
+#from scipy.io import read_array, save, loadmat, write_array
 from scipy import signal
 from numpy.linalg import LinAlgError
 
@@ -22,7 +22,7 @@ import sys, os, copy, time
 
 from matplotlib.ticker import LogFormatterMathtext
 
-version = '1.1.3'
+version = '1.1.4'
 
 class MyFormatter(LogFormatterMathtext):
    def __call__(self, x, pos=None):
@@ -398,7 +398,7 @@ class TransferFunction(signal.lti):
             self.__dict__[attr] = val
 
           
-    def __init__(self, num, den, dt=0.01, maxt=5.0, myvar='s'):
+    def __init__(self, num, den, dt=0.01, maxt=5.0, myvar='s', label='G'):
         """num and den are either scalar constants or lists that are
         passed to scipy.poly1d to create a list of coefficients."""
         #print('in TransferFunction.__init__, dt=%s' % dt)
@@ -418,7 +418,14 @@ class TransferFunction(signal.lti):
         self.dt = dt
         self.myvar = myvar
         self.maxt = maxt
+        self.label = label
 
+
+    def print_poles(self, label=None):
+       if label is None:
+          label = self.label
+       print(label +' poles =' + str(self.poles))
+       
 
     def __repr__(self, labelstr='controls.TransferFunction'):
         nstr=str(self.num)#.strip()

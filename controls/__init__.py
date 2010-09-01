@@ -12,7 +12,7 @@ from scipy import signal
 from scipy import interpolate, integrate
 from scipy.linalg import inv as inverse
 from scipy.optimize import newton, fmin, fminbound
-from scipy.io import read_array, save, loadmat, write_array
+#from scipy.io import read_array, save, loadmat, write_array
 from scipy import signal
 from numpy.linalg import LinAlgError
 
@@ -22,7 +22,7 @@ import sys, os, copy, time
 
 from matplotlib.ticker import LogFormatterMathtext
 
-version = '1.1.3'
+version = '1.1.4'
 
 class MyFormatter(LogFormatterMathtext):
    def __call__(self, x, pos=None):

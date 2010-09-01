@@ -3,7 +3,7 @@ import os, glob, shutil, re
 import txt_mixin
 base_dir = '/home/ryan/git/controls/'
 dist_dir = os.path.join(base_dir, 'dist')
-dest_dir = '/home/ryan/siue/classes/450/2010/controls_dist/'
+dest_dir = '/home/ryan/siue/classes/mechatronics/2010/python_controls/'
 os.chdir(base_dir)
 
 #delete old distributions
@@ -43,13 +43,13 @@ shutil.copy2(gz_path, dest_dir)
 gz_dest_path = os.path.join(dest_dir, gz_name)
 
     
-exe_re = '<controls_dist/controls-.*\\.exe>`_'
-gz_re = '<controls_dist/controls-.*\\.tar\\.gz>`_'
+exe_re = '<controls-.*\\.exe>`_'
+gz_re = '<controls-.*\\.tar\\.gz>`_'
 
-exe_new = '<controls_dist/%s>`_' % win_name
-gz_new = '<controls_dist/%s>`_' % gz_name
+exe_new = '<%s>`_' % win_name
+gz_new = '<%s>`_' % gz_name
 
-rst_path = '/home/ryan/siue/classes/450/2010/python.rst'
+rst_path = '/home/ryan/siue/classes/mechatronics/2010/python_controls/python.rst'
 myfile = txt_mixin.txt_file_with_list(rst_path)
 myfile.replaceallre(exe_re, exe_new)
 myfile.replaceallre(gz_re, gz_new)
