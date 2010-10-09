@@ -900,7 +900,7 @@ class TransferFunction(signal.lti):
             for key in myargs:
                 if kwargs.has_key(key):
                     subkwargs[key]=kwargs[key]
-            myind=ax1._get_lines.count
+            #myind=ax1._get_lines.count
             mylines=_PlotMag(f, self, axis=ax1, **subkwargs)
             ax1.set_ylabel('Mag. Ratio (dB)')
             ax1.xaxis.set_major_formatter(MyFormatter())
