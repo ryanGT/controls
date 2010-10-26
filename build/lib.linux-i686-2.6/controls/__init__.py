@@ -521,6 +521,16 @@ class TransferFunction(signal.lti):
         return self.dt
 
 
+    def simplify(self, rtol=1e-5, atol=1e-10):
+        """Return a new TransferFunction object with poles and zeros
+        that nearly cancel (within real or absolutie tolerance rtol
+        and atol) removed."""
+        gain = self.gain
+        new_num, new_den = polyfactor(self.num, self.den, prepend=False)
+        newtf = self.__class__(new_num*gain, new_den)
+        return newtf
+
+                 
     def ToLatex(self, eps=1e-12, fmt='%0.5g', ds=True):
         mynum = self.num
         myden = self.den
@@ -890,7 +900,7 @@ class TransferFunction(signal.lti):
             for key in myargs:
                 if kwargs.has_key(key):
                     subkwargs[key]=kwargs[key]
-            myind=ax1._get_lines.count
+            #myind=ax1._get_lines.count
             mylines=_PlotMag(f, self, axis=ax1, **subkwargs)
             ax1.set_ylabel('Mag. Ratio (dB)')
             ax1.xaxis.set_major_formatter(MyFormatter())
