@@ -8,7 +8,7 @@ import glob, pdb
 from math import atan2, log10
 
 from scipy import *
-from scipy import signal
+from scipy import signal, linalg
 from scipy import interpolate, integrate
 from scipy.linalg import inv as inverse
 from scipy.optimize import newton, fmin, fminbound
@@ -1154,7 +1154,8 @@ class TransferFunction(signal.lti):
         
         
 
-    def c2d(self, dt=None, maxt=None, method='zoh', step_time=0.5, a=2.0):
+    def c2d(self, dt=None, maxt=None, method='zoh', \
+            step_time=0.5, a=2.0, force_num_order=None):
         """Find a numeric approximation of the discrete transfer
         function of the system.
 
@@ -1193,11 +1194,18 @@ class TransferFunction(signal.lti):
         a is almost always equal to 2.
         """
         if method.lower() == 'zoh':
-            ystep = self.step_response(dt=dt, maxt=maxt, step_time=step_time)[0]
-            myimp = self.create_impulse(dt=dt, maxt=maxt, imp_time=step_time)
             #Pdb().set_trace()
+            ystep = self.step_response(dt=dt, maxt=maxt, step_time=step_time)
+            myimp = self.create_impulse(dt=dt, maxt=maxt, imp_time=step_time)
+            
             print('You called c2d with "zoh".  This is most likely bad.')
-            nz, dz = fit_discrete_response(ystep, myimp, self.den.order, self.den.order+1)#we want the numerator order to be one less than the denominator order - the denominator order +1 is the order of the denominator during a step response
+            if force_num_order is None:
+               num_order = self.den.order
+            else:
+               num_order = force_num_order
+            nz, dz = fit_discrete_response(ystep, myimp, \
+                                           numorder=num_order, \
+                                           denorder=self.den.order+1)#we want the numerator order to be one less than the denominator order - the denominator order +1 is the order of the denominator during a step response
             #multiply by (1-z^-1)
             nz2 = r_[nz, [0.0]]
             nzs = r_[[0.0],nz]
