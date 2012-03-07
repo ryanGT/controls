@@ -174,7 +174,7 @@ def PolyToLatex(polyin, var='s', fmt='%0.5g', eps=1e-12):
     return outstr
 
     
-def polyfactor(num, den, prepend=True, rtol=1e-5, atol=1e-10):
+def polyfactor(num, den, prepend=True, rtol=1e-5, atol=1e-10, polytol=1e-10):
     """Factor out any common roots from the polynomials represented by
     the vectors num and den and return new coefficient vectors with
     any common roots cancelled.
@@ -189,20 +189,34 @@ def polyfactor(num, den, prepend=True, rtol=1e-5, atol=1e-10):
     nroots = roots(numpoly).tolist()
     droots = roots(denpoly).tolist()
     n = 0
+    common_roots = []
     while n < len(nroots):
         curn = nroots[n]
         ind = in_with_tol(curn, droots, rtol=rtol, atol=atol)
         if ind > -1:
-            nroots.pop(n)
+            cur_common = nroots.pop(n)
+            common_roots.append(cur_common)
             droots.pop(ind)
             #numpoly, rn = polydiv(numpoly, poly(curn))
             #denpoly, rd = polydiv(denpoly, poly(curn))
         else:
             n += 1
-    numpoly = poly(nroots)
-    denpoly = poly(droots)
-    nvect = numpoly
-    dvect = denpoly
+    #just reassembling the numerator and denominator polynomials from
+    #the roots results in a lost scaling.  We need to divide the
+    #common roots out of num and den and test that the remainders are small
+
+    #Old code that didn't scale properly:
+    ## numpoly = poly(nroots)
+    ## denpoly = poly(droots)
+    factor_poly = poly(common_roots)
+    qn, rn = numpoly/factor_poly
+    test1 = abs(rn.coeffs).max()
+    assert test1 < polytol, "Problem with the remainder of the numerator when factoring: rn = %s" % rn
+    qd, rd = denpoly/factor_poly
+    test2 = abs(rd.coeffs).max()
+    assert test2 < polytol, "Problem with the remainder of the denominator when factoring: rd = %s" % rd
+    nvect = qn.coeffs
+    dvect = qd.coeffs
     if prepend:
         nout, dout = prependzeros(nvect, dvect)
     else:
@@ -1194,11 +1208,10 @@ class TransferFunction(signal.lti):
         a is almost always equal to 2.
         """
         if method.lower() == 'zoh':
-            #Pdb().set_trace()
-            ystep = self.step_response(dt=dt, maxt=maxt, step_time=step_time)
+            ystep = self.step_response(dt=dt, maxt=maxt, step_time=step_time, \
+                                       fignum=None)
             myimp = self.create_impulse(dt=dt, maxt=maxt, imp_time=step_time)
             
-            print('You called c2d with "zoh".  This is most likely bad.')
             if force_num_order is None:
                num_order = self.den.order
             else:
@@ -1299,10 +1312,13 @@ class Digital_Compensator(object):
    def calc_out(self, i):
       out = 0.0
       for n, bn in enumerate(self.num):
-         out += self.input[i-n]*bn
+         if (i-n) > 0:
+            out += self.input[i-n]*bn
 
       for n in range(1, self.Nden):
-         out -= self.output[i-n]*self.den[n]
+         if (i-n) > 0:
+            out -= self.output[i-n]*self.den[n]
+            
       out = out/self.den[0]
       return out
 
