@@ -16,7 +16,7 @@ from scipy.optimize import newton, fmin, fminbound
 from scipy import signal
 from numpy.linalg import LinAlgError
 
-from  IPython.Debugger import Pdb
+from IPython.core.debugger import Pdb
 
 import sys, os, copy, time
 
@@ -79,7 +79,7 @@ def build_fit_matrix(output_vect, input_vect, numorder, denorder):
         curout = r_[[0.0], curout[0:-1]]
         A[:,firstden+n] = curout
     return A
-    
+
 
 def fit_discrete_response(output_vect, input_vect, numorder, denorder):
     """Find the coefficients of a digital transfer function that give
@@ -173,7 +173,7 @@ def PolyToLatex(polyin, var='s', fmt='%0.5g', eps=1e-12):
             outstr+=curcoeff+curs
     return outstr
 
-    
+
 def polyfactor(num, den, prepend=True, rtol=1e-5, atol=1e-10):
     """Factor out any common roots from the polynomials represented by
     the vectors num and den and return new coefficient vectors with
@@ -244,7 +244,7 @@ def tustin_sub(polyin, T, a=2.0):
     out = polysubstitute(polyin, numsub, densub)
     out.myvar = 'z'
     return out
-    
+
 
 def create_swept_sine_input(maxt, dt, maxf, minf=0.0, deadtime=2.0):
     t = arange(0, maxt, dt)
@@ -362,7 +362,7 @@ def _checkpoles(poleloc,pnew):
 
 def _realizable(num, den):
     realizable = False
-    if not isscalar(den):        
+    if not isscalar(den):
         if isscalar(num):
             realizable = True
         elif len(den) >= len(num):
@@ -397,7 +397,7 @@ class TransferFunction(signal.lti):
         else:
             self.__dict__[attr] = val
 
-          
+
     def __init__(self, num, den, dt=0.01, maxt=5.0, myvar='s', label='G'):
         """num and den are either scalar constants or lists that are
         passed to scipy.poly1d to create a list of coefficients."""
@@ -414,7 +414,7 @@ class TransferFunction(signal.lti):
             z, p, k = signal.tf2zpk(num, den)
             self.gain = k
         self.num = poly1d(num)
-        self.den = poly1d(den) 
+        self.den = poly1d(den)
         self.dt = dt
         self.myvar = myvar
         self.maxt = maxt
@@ -425,7 +425,7 @@ class TransferFunction(signal.lti):
        if label is None:
           label = self.label
        print(label +' poles =' + str(self.poles))
-       
+
 
     def __repr__(self, labelstr='controls.TransferFunction'):
         nstr=str(self.num)#.strip()
@@ -530,7 +530,7 @@ class TransferFunction(signal.lti):
         newtf = self.__class__(new_num*gain, new_den)
         return newtf
 
-                 
+
     def ToLatex(self, eps=1e-12, fmt='%0.5g', ds=True):
         mynum = self.num
         myden = self.den
@@ -605,7 +605,7 @@ class TransferFunction(signal.lti):
                     sorted[n,ind] = elem
             prevrow = sorted[n,:]
         return sorted
-        
+
 
     def opt(self, kguess):
         pnew = self._RLFindRoots(kguess)
@@ -645,7 +645,7 @@ class TransferFunction(signal.lti):
 ##         ax2 = fig.axes[1]
 ##         ax2.semilogx(modelf, mphase)
 
-        
+
     def SimpleFactor(self):
         mynum=self.num
         myden=self.den
@@ -850,7 +850,7 @@ class TransferFunction(signal.lti):
             tflist.append(curtf)
             N = len(rlist)
         return tflist
-    
+
 
     def FreqResp(self, f, fignum=1, fig=None, clear=True, \
                  grid=True, legend=None, legloc=1, legsub=1, \
@@ -879,12 +879,12 @@ class TransferFunction(signal.lti):
         self.dBmag = 20*log10(abs(self.comp))
         rphase = unwrap(angle(self.comp))
         self.phase = rphase*180.0/pi
-        
+
         if fig is None:
             if fignum is not None:
                 import pylab
                 fig = pylab.figure(fignum)
-            
+
         if fig is not None:
             if clear:
                 fig.clf()
@@ -970,7 +970,7 @@ class TransferFunction(signal.lti):
         imp = zeros_like(tvect)
         imp[indon] = 1.0
         return imp
-    
+
 
     def create_step_input(self, dt=None, maxt=None, indon=5):
         """Create the input impulse vector to be used in least squares
@@ -1032,13 +1032,13 @@ class TransferFunction(signal.lti):
             if fignum is not None:
                 import pylab
                 fig = pylab.figure(fignum)
-            
+
         if fig is not None:
             if clear:
                 fig.clf()
             ax = fig.add_subplot(111)
             if plotu:
-                leglist =['Input','Output'] 
+                leglist =['Input','Output']
                 ax.plot(tvect, u, fmts[0], linestyle='steps', **kwargs)#assume step input wants 'steps' linestyle
                 ofmt = fmts[1]
             else:
@@ -1089,7 +1089,7 @@ class TransferFunction(signal.lti):
             if fignum is not None:
                 import pylab
                 fig = pylab.figure(fignum)
-            
+
         if fig is not None:
             if clear:
                 fig.clf()
@@ -1100,14 +1100,14 @@ class TransferFunction(signal.lti):
 
         return yout, tout
 
-        
+
     def swept_sine_response(self, maxf, minf=0.0, dt=None, maxt=None, deadtime=2.0, interp=0):
         u = create_swept_sine_input(maxt, dt, maxf, minf=minf, deadtime=deadtime)
         t = create_swept_sine_t(maxt, dt, deadtime=deadtime)
         ysweep = self.lsim(u, t, interp=interp)
         return t, u, ysweep
 
-    
+
     def _c2d_sub(self, numsub, densub, scale):
         """This method performs substitutions for continuous to
         digital conversions using the form:
@@ -1131,11 +1131,11 @@ class TransferFunction(signal.lti):
             myden += poly1d(coeff*(scale**(n-p))*((numsub**(n-p))*(densub**(n-(n-p)))))
         return mynum.coeffs, myden.coeffs
 
-        
+
     def c2d_tustin(self, dt=None, a=2.0):
         """Convert a continuous time transfer function into a digital
         one by substituting
-        
+
             a  z-1
         s = - -----
             T  z+1
@@ -1151,8 +1151,8 @@ class TransferFunction(signal.lti):
         mynum = mynum/myden[0]
         myden = myden/myden[0]
         return mynum, myden
-        
-        
+
+
 
     def c2d(self, dt=None, maxt=None, method='zoh', step_time=0.5, a=2.0):
         """Find a numeric approximation of the discrete transfer
@@ -1161,7 +1161,7 @@ class TransferFunction(signal.lti):
         The general approach is to find the response of the system
         using lsim and fit a discrete transfer function to that
         response as a least squares problem.
-        
+
         dt is the time between discrete time intervals (i.e. the
         sample time).
 
@@ -1264,8 +1264,8 @@ class Compensator(TransferFunction):
       #print('in Compensator.__init__')
       #Pdb().set_trace()
       TransferFunction.__init__(self, num, den, *args, **kwargs)
-      
-      
+
+
    def c2d(self, dt=None, a=2.0):
       """Compensators should use Tustin for c2d conversion.  This
       method is just and alias for TransferFunction.c2d_tustin"""
@@ -1286,7 +1286,7 @@ class Digital_Compensator(object):
       self.output = output_vect
       self.Nnum = len(self.num)
       self.Nden = len(self.den)
-      
+
 
    def calc_out(self, i):
       out = 0.0
@@ -1316,7 +1316,7 @@ class Digital_PI(object):
       self.esum[i] = self.esum[i-1]+self.input[i]
       out = self.input[i]*self.kp+self.esum[i]*self.ki
       return out
-      
+
 
 class Digital_P_Control(Digital_Compensator):
    def __init__(self, kp, input_vect=None, output_vect=None):
@@ -1330,7 +1330,7 @@ class Digital_P_Control(Digital_Compensator):
    def calc_out(self, i):
       self.output[i] = self.kp*self.input[i]
       return self.output[i]
-   
+
 
 def dig_comp_from_c_comp(c_comp, dt):
    """Convert a continuous compensator into a digital one using Tustin
@@ -1347,7 +1347,7 @@ class FirstOrderCompensator(Compensator):
       D(s) = -----------
                 (s+p)    """
       Compensator.__init__(self, K*poly1d([1,z]), [1,p])
-      
+
 
    def __repr__(self):
         return TransferFunction.__repr__(self, labelstr='controls.FirstOrderCompensator')
@@ -1409,7 +1409,7 @@ class Closed_Loop_System_with_Sat(object):
              t_nn, y_n, x_n = self.plant_tf.lsim2([v_n,v_n], [t_n, t_n+dt], X0=x_n[-1], returnall=1)
           else:
              t_nn, y_n, x_n = self.plant_tf.lsim([v_n,v_n], [t_n, t_n+dt], X0=x_n[-1], returnall=1)
-             
+
           y[n] = y_n[-1]
           v[n] = v_n
       self.y = y
@@ -1421,13 +1421,13 @@ class Closed_Loop_System_with_Sat(object):
          return y
 
 
-      
-      
-      
+
+
+
 def step_input():
     return Input(1,[1,0])
 
-    
+
 def feedback(olsys,H=1):
     """Calculate the closed-loop transfer function
 
@@ -1502,4 +1502,4 @@ def rate_limiter(uin, du):
 
 
 
-   
+
