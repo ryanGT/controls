@@ -16,7 +16,7 @@ from scipy.optimize import newton, fmin, fminbound
 from scipy import signal
 from numpy.linalg import LinAlgError
 
-from IPython.core.debugger import Pdb
+#from IPython.core.debugger import Pdb
 
 import sys, os, copy, time
 
