@@ -16,7 +16,7 @@ from scipy.optimize import newton, fmin, fminbound
 from scipy import signal
 from numpy.linalg import LinAlgError
 
-#from IPython.core.debugger import Pdb
+from IPython.core.debugger import Pdb
 
 import sys, os, copy, time
 
@@ -208,20 +208,24 @@ def polyfactor(num, den, prepend=True, rtol=1e-5, atol=1e-10, polytol=1e-10):
     #Old code that didn't scale properly:
     ## numpoly = poly(nroots)
     ## denpoly = poly(droots)
-    factor_poly = poly(common_roots)
-    qn, rn = numpoly/factor_poly
-    test1 = abs(rn.coeffs).max()
-    assert test1 < polytol, "Problem with the remainder of the numerator when factoring: rn = %s" % rn
-    qd, rd = denpoly/factor_poly
-    test2 = abs(rd.coeffs).max()
-    assert test2 < polytol, "Problem with the remainder of the denominator when factoring: rd = %s" % rd
-    nvect = qn.coeffs
-    dvect = qd.coeffs
-    if prepend:
-        nout, dout = prependzeros(nvect, dvect)
+    if common_roots:
+       factor_poly = poly(common_roots)
+       qn, rn = numpoly/factor_poly
+       test1 = abs(rn.coeffs).max()
+       assert test1 < polytol, "Problem with the remainder of the numerator when factoring: rn = %s" % rn
+       qd, rd = denpoly/factor_poly
+       test2 = abs(rd.coeffs).max()
+       assert test2 < polytol, "Problem with the remainder of the denominator when factoring: rd = %s" % rd
+       nvect = qn.coeffs
+       dvect = qd.coeffs
+       if prepend:
+           nout, dout = prependzeros(nvect, dvect)
+       else:
+           nout = nvect
+           dout = dvect
     else:
-        nout = nvect
-        dout = dvect
+       nout = num
+       dout = den
     return nout, dout
 
 
